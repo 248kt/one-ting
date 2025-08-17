@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::selection{
+  background: rgba(0,0,0,0.1);
+}
+.dark ::selection{
+  background: rgba(255,255,255,0.2);
+}
+
+html { transition: background-color 300ms ease, color 300ms ease; }
+
+/* Thin, minimal scrollbar */
+*::-webkit-scrollbar{ width:8px; height:8px }
+*::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.18); border-radius:8px }
+.dark *::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.25) }
+*::-webkit-scrollbar-track{ background:transparent }
+
+/* Mask fade utility for top/bottom peek */
+.mask-fade {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+}
+
+
+/* Horizontal mask fade for edge hinting */
+.mask-x-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 22px, black calc(100% - 22px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, black 22px, black calc(100% - 22px), transparent 100%);
+}
+
+/* Horizontal scrollbars */
+.reel::-webkit-scrollbar { height: 8px; }
+.reel::-webkit-scrollbar-thumb { background: rgba(0,0,0,.18); border-radius: 8px; }
+.dark .reel::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); }
