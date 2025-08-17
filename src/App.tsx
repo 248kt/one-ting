@@ -4,9 +4,8 @@ import confetti from 'canvas-confetti'
 import ThemeToggle from './components/ThemeToggle'
 import Logo from './components/Logo'
 import { formatTime } from './lib/time'
-import { chime, beep } from './lib/sound'
-
-type Status = 'idle' | 'running' | 'completed' | 'stopped'
+import HistoryList from './components/HistoryList'
+import { chime, beep } from './lib/sound'type Status = 'idle' | 'running' | 'completed' | 'stopped'
 
 type HistoryItem = {
   task: string
@@ -47,6 +46,9 @@ export default function App() {
   const tickRef = useRef<number | null>(null)
 
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory())
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deletingAll, setDeletingAll] = useState(false)
+
   
   const popoutRef = useRef<Window | null>(null)
 
@@ -99,7 +101,7 @@ export default function App() {
             .task{font-size:12px;opacity:.7;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
           </style>
         </head><body><div class="wrap">
-          <div class="time" id="t">00:00</div>
+          <div class="time" id="t">00:00</motion.div>
           <div class="task" id="task"></div>
         </div>
         <script>
@@ -210,7 +212,7 @@ export default function App() {
 
       <main className="flex-1 flex items-center justify-center px-5 sm:px-8">
         <div className="w-full max-w-xl">
-          <AnimatePresence mode="wait">
+          
             {status === 'idle' && (
               <motion.section
                 key="setup"
@@ -245,6 +247,7 @@ export default function App() {
                       max={180}
                       value={minutes}
                       onChange={e => setMinutes(Number(e.target.value))}
+                    
                       className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
                     />
                   </div>
@@ -270,106 +273,7 @@ export default function App() {
                 transition={{ duration: 0.35 }}
                 className="relative bg-white/70 dark:bg-white/5 backdrop-blur rounded-2xl border border-black/10 dark:border-white/10 shadow-soft p-6 sm:p-8"
               >
-                <div className="text-sm text-neutral-600 dark:text-neutral-300 mb-2">Focusing on</div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-6 break-words">{task}</h2>
-
-                <div className="flex flex-col items-center">
-                  <motion.div
-                    key={remaining}
-                    initial={{ opacity: 0.6, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25 }}
-                    className="text-7xl sm:text-8xl font-bold tabular-nums tracking-tight"
-                  >
-                    {formatTime(remaining)}
-                  </motion.div>
-
-                  <div className="w-full mt-6">
-                    <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-neutral-900 dark:bg-white"
-                        initial={{ width: '0%' }}
-                        animate={{ width: `${((total-remaining)/total)*100}%` }}
-                        transition={{ type: 'spring', stiffness: 110, damping: 20 }}
-                      />
-                    </div>
-                    {!stopAllowed && (
-                      <div className="text-xs text-neutral-600 dark:text-neutral-300 mt-2 text-center">
-                        Stop available in {formatTime(stopThreshold - elapsed)}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-8 flex flex-wrap gap-3 justify-center">
-                    <button
-                      onClick={openPopout}
-                      className="rounded-lg border border-black/10 dark:border-white/10 px-4 py-2 hover:shadow-soft transition"
-                    >
-                      Pop-out mini timer
-                    </button>
-                    {stopAllowed && (
-                      <button
-                        onClick={stop}
-                        className="rounded-lg border border-black/10 dark:border-white/10 px-4 py-2 hover:shadow-soft transition"
-                      >
-                        Stop (cancel)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {(status === 'completed' || status === 'stopped') && (
-              <motion.section
-                key="done"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35 }}
-                className="bg-white/70 dark:bg-white/5 backdrop-blur rounded-2xl border border-black/10 dark:border-white/10 shadow-soft p-6 sm:p-8 text-center"
-              >
-                {status === 'completed' ? (
-                  <>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-2">Nice work 🎉</h2>
-                    <p className="text-neutral-600 dark:text-neutral-300 mb-6">
-                      You focused for {Math.floor(total/60)} minutes on “{task}”.
-                    </p>
-                    <div className="flex justify-center gap-3 mb-6">
-                      <button
-                        onClick={shareSummary}
-                        className="rounded-lg border border-black/10 dark:border-white/10 px-4 py-2 hover:shadow-soft transition"
-                      >
-                        Share / Copy summary
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-2">Session canceled</h2>
-                    <p className="text-neutral-600 dark:text-neutral-300 mb-6">
-                      Come back ready — you got this.
-                    </p>
-                  </>
-                )}
-
-                <div className="flex justify-center">
-                  <button
-                    onClick={reset}
-                    className="rounded-lg border border-black/10 dark:border-white/10 px-4 py-2 hover:shadow-soft transition"
-                  >
-                    Start another
-                  </button>
-                </div>
-              </motion.section>
-            )}
-          </AnimatePresence>
-
-          {/* History & streaks */}
-          <section className="mt-6 space-y-2">
-            <div className="text-sm text-neutral-600 dark:text-neutral-300">
-              Streak: <span className="font-semibold">{streak}</span> {streak === 1 ? 'day' : 'days'}
-            </div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-300 flex items-center justify-between"><span>Streak: <span className="font-semibold">{streak}</span> {streak === 1 ? 'day' : 'days'}</span><button onClick={() => { localStorage.removeItem('focus_history_v1'); setHistory([]); }} className="ml-3 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500 hover:bg-red-600 text-white transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
             {history.length > 0 && (
               <ul className="text-sm text-neutral-700 dark:text-neutral-300 border border-black/10 dark:border-white/10 rounded-lg divide-y divide-black/5 dark:divide-white/5">
                 {history.slice(0,5).map((h, i) => (
@@ -381,8 +285,6 @@ export default function App() {
               </ul>
             )}
           </section>
-
-          {/* Minimal Stats View */}
           <section className="mt-6">
             <div className="rounded-lg border border-black/10 dark:border-white/10 p-4">
               <div className="font-semibold mb-2">Stats (last 7 days)</div>

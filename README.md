@@ -51,3 +51,28 @@ npm run preview
 
 - Mute control removed for simplicity.
 - History log now scrolls in a compact masked stack.
+
+
+## Deploy to Netlify
+**Option A — Web UI**
+1. Push to a Git repo (GitHub/GitLab/Bitbucket).
+2. In Netlify, “New site from Git” → pick your repo.
+3. Build command: `npm run build`
+   Publish directory: `dist`
+4. Deploy. (We include `netlify.toml` and `public/_redirects` for SPA fallback.)
+
+**Option B — Drag & Drop**
+1. Run locally:
+   ```bash
+   npm install
+   npm run build
+   ```
+2. Drag the generated `dist/` folder into the Netlify UI (Deploys → “Deploy site”).
+
+**Option C — Netlify CLI**
+```bash
+npm install
+npm run build
+npm i -g netlify-cli
+netlify deploy --prod --dir=dist
+```

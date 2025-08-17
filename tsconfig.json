@@ -20,6 +20,7 @@
     "baseUrl": "."
   },
   "include": [
-    "src"
+    "src",
+    "src/types"
   ]
 }
